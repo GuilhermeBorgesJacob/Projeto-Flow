@@ -8,8 +8,6 @@ g++ -Wall -std=c++17 gpda-ex1.cpp -o gpda-ex1
 ./gpda-ex1
 ```
 
-Como eu tinha achado meio simples, decidi adicionar umas firulas no terminal kkkk
-
 ### Exercício 2: Solução numérica da Eq. 3.28
 
 ```bash
