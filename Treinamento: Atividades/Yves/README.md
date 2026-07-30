@@ -33,7 +33,7 @@ Problemas na execução do código podem ser por conta de falta de algum dos pac
 
 ## Estrutura da pasta
 ```
-├── Ex 1/ # Exercício 1
+├── Ex 1/ 
 │ ├── C++/
 │ │ └── gpda-ex1.cpp 
 │ ├── Python/
@@ -41,7 +41,7 @@ Problemas na execução do código podem ser por conta de falta de algum dos pac
 │ ├── analise_resultados.png 
 │ └── resultados.csv 
 │
-└── Ex 2/ # Exercício 2
+└── Ex 2/ 
 ├── C++/
 │ └── ex2_interativo.cpp
 ├── Python/
