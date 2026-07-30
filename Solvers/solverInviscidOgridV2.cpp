@@ -305,6 +305,7 @@ int main() {
     scalarField u(lines,columns,x,y);
     scalarField v(lines,columns,x,y);
     scalarField phi(lines,columns,x,y);
+    scalarField P(lines,columns,x,y);
 
     for (int i = 0; i<lines; i++) {
         for(int j = 0; j<columns; j++) {
@@ -325,9 +326,6 @@ int main() {
         int i = 0;
         phi.F[i][j] = u.F[i][j]*x.F[i][j] + v.F[i][j]*y.F[i][j];
     }
-    
-    int iterations=100000;
-    double dt=0.000001;
 
     std::vector<double> tempVector;
     std::vector<std::vector<double>> A,B,C,D,E;
@@ -487,7 +485,7 @@ int main() {
             }
         }
     }
-    std::cout << "rodou ate aq 6\n";
+    
     for (int j = 0; j < columns-1; j++) {
         int i = lines -1;
         if (i == SacrificeID1 && j == SacrificeID2) {
@@ -559,7 +557,12 @@ int main() {
         }
         u.F[i][0] = u.F[i][columns-1];
         v.F[i][0] = v.F[i][columns-1];
+    }
 
+    for (int i = 0; i < lines; i++) {
+        for (int j = 0; j < columns; j++) {
+            P.F[i][j] = Pinfinity + density*(std::pow(Vinfinity,2)-(std::pow(u.F[i][j],2)+std::pow(v.F[i][j],2)))/2;
+        }
     }
     std::cout << "valor de u no TE e: "<< u.F[lines-1][0] << '\n';
     std::cout << "valor de v no TE e: "<< v.F[lines-1][0] << '\n';
@@ -585,7 +588,7 @@ int main() {
         tecplot << "LOOKUP_TABLE default\n";
         for (int i = 0; i < lines; i++){
             for (int j = 0; j < columns; j++){
-                tecplot << phi.F[i][j] << "\n";
+                tecplot << P.F[i][j] << "\n";
             }
         }
         // Velocidade (u, v)
