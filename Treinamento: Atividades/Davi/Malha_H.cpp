@@ -1,3 +1,7 @@
+// Autor: Davi Guimarães Durval
+// Data: 27 de Agosto de 2026
+// Código C++ que "lê" código NACA de 5 dígitos e gera arquivos para malha em formato "H"
+
 #include <iostream>
 #include <vector>
 #include <string>
