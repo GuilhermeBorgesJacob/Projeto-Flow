@@ -1,7 +1,9 @@
 ## Mathematical Background
+
 $$
 \frac{a}{b}
 $$
+
 The 2D wave equation for a scalar field $u(x, y, t)$ with wave speed $c$ is:
 
 $$
