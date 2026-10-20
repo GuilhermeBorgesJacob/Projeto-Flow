@@ -1,10 +1,18 @@
-## Mathematical Background
+# Geradores de malha automáticos por equações diferencias
+
+## Equações elípticas
+
+As equações com comportamneto elíptico utilizadas para gerar as malhas são: 
 
 $$
-\frac{a}{b}
+\frac{\partial^2 x}{\partial \xi^2} + \frac{\partial^2 x}{\partial \eta^2} = 0
 $$
 
-The 2D wave equation for a scalar field $u(x, y, t)$ with wave speed $c$ is:
+$$
+\frac{\partial^2 y}{\partial \xi^2} + \frac{\partial^2 y}{\partial \eta^2} = 0
+$$
+
+Onde as coordenadas $\xi$ e $\eta$ são coordenas computacionais.
 
 $$
 \frac{\partial^2 u}{\partial t^2} = c^2
