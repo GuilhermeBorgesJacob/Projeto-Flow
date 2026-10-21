@@ -38,5 +38,5 @@ $$
 y_{i,j} = \frac{y_{i+1,j} + y_{i-1,j} + y_{i,j+1} + y_{i,j-1}}{4}
 $$
 
-Quando aplicadas as equações acima para cada ponto do domínio um sistema linear de equações é formado. Para solucionar o sistema condições de contorno devem ser aplicadas em todo limite do domínio computacional. *É importante notar que o comportamento do sistema discreto condiz com o comportamento do sistema de equações originais, onde ambos necessitam de aplicação de condições de contorno em toda borda do domínio e ambos são lineares, logo a discretização escolhida é razoável*.
+Quando aplicadas as equações acima para cada ponto do domínio um sistema linear de equações é formado. Para solucionar o sistema condições de contorno devem ser aplicadas em todo limite do domínio computacional. **É importante notar que o comportamento do sistema discreto condiz com o comportamento do sistema de equações originais, onde ambos necessitam de aplicação de condições de contorno em toda borda do domínio e ambos são lineares, logo a discretização escolhida é razoável**.
 As principais técnicas numéricas utilizadas para a solução do sistema de equações descritas acima são a método de gauss-seidel e a técnica de relaxação.
