@@ -11,10 +11,10 @@
 #include <omp.h>
 #include <chrono>
 #include "Eigen/Sparse"
-
+#include <Eigen/SparseQR>
 
 class scalarField0{
-    //estrutura que armazena os dados referentes aos campos escalares da malha e funções que representão suas derivardas
+    // Estrutura que armazena os dados referentes aos campos escalares da malha e funções que representão suas derivardas
     public:
         int lines;
         int columns;
@@ -41,7 +41,6 @@ class scalarField0{
                 D2deta2.push_back(temp);
                 D2dxideta.push_back(temp);
             }
-             
         }
         void calculateMetrics() {
             for (int i = 0; i <lines; i++) {
@@ -226,44 +225,41 @@ double NACAinf(int m, int p, int t, double c, double x);
 double Dydx(double x, std::string pos, int m, int p, int t, double c);
 int matrixID(int i, int j, int lin, int col);
 
-int main() {
-    std::cout << "esta rodando\n";
+int solver(const std::string& gridFile, const std::string& vtkOut) {
+    std::cout << "Está rodando\n";
     std::cout << "OpenMP Threads available: " << omp_get_max_threads() << "\n";
-    int lines;
-    int columns;
-    std::ifstream malha;
-    std::ofstream tecplot;
-    std::string linha;
-    // ler o valor de "I" e armazenar em "columns" e "J" em "lines" do arquivo
-    //malha.open("OgridNACA20011.grid", std::ios::in);//Arquivo 1 .grid
-    malha.open("OgridNACA20011.grid", std::ios::in);
-    if (malha.is_open()) {
-        std::getline(malha, linha); 
-
-        if (std::getline(malha, linha)) {
-            
-            std::regex pattern(R"(I=\s*(\d+).*J=\s*(\d+))");
-            std::smatch match;
-
-            if (std::regex_search(linha, match, pattern)) {
-                columns = std::stoi(match[1]);
-                
-                lines = std::stoi(match[2]);
-                
-                //i=columns;
-                //j=lines;
-            }
-        }
+    int lines = 0;
+    int columns = 0;
+    std::ifstream malha(gridFile, std::ios::in);
+    if (!malha.is_open()) {
+      throw std::runtime_error("Não foi possível abrir a malha: " + gridFile);
     }
-    std::cout << lines << '\n';
-    std::cout << columns << '\n';
-    //check
+    std::string linha;
+    std::getline(malha, linha);
+    if (!std::getline(malha, linha)) {
+      throw std::runtime_error("Malha vazia ou sem cabeçalho");
+    }
+    // ler o valor de "I" e armazenar em "columns" e "J" em "lines" do arquivo
+    // malha.open("OgridNACA20011.grid", std::ios::in);//Arquivo 1 .grid
+    std::regex pattern(R"(I=\s*(\d+).*J=\s*(\d+))");
+    std::smatch match;
+    if (!std::regex_search(linha, match, pattern)) {
+      throw std::runtime_error("Cabeçalho da malha inválido: " + linha);
+    }
+    columns = std::stoi(match[1]);
+    lines   = std::stoi(match[2]);
+
+    if (lines <= 0 || columns <= 0) {
+      throw std::runtime_error("Dimensões da malha inválidas");
+    }
+
+    std::ofstream tecplot;
     scalarField0 x;
     scalarField0 y;
     x.constructor(lines,columns);
     y.constructor(lines,columns);
     
-    // ler os dados dos pontos do arquivo .grid e armazenar em x.F[i][j] & y.F[i][j]
+    // Ler os dados dos pontos do arquivo .grid e armazenar em x.F[i][j] & y.F[i][j]
     int index1 = 0;
     int index2 = 0;
     while (std::getline(malha, linha)) {
@@ -284,13 +280,11 @@ int main() {
             break;
         } 
     }
-    std::cout << "malha lida" << '\n';
+    std::cout << "Malha lida" << '\n';
     
     x.calculateMetrics();
     y.calculateMetrics();
 
-    
-    
     double density = 1.2;
     
     double Vinfinity = 20;
@@ -517,27 +511,29 @@ int main() {
         b(i) = Pconstants[i];
     }
         
-    Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
-    
-    Eigen::SparseMatrix<double> MtM = M.transpose() * M;
-    Eigen::VectorXd Mtb = M.transpose() * b;
 
-    solver.compute(MtM);
+    Eigen::SparseQR<Eigen::SparseMatrix<double>,
+                Eigen::COLAMDOrdering<int>> solver;
+
+    solver.compute(M);
     if (solver.info() != Eigen::Success) {
-        std::cerr << "Decomposition failed!" << std::endl;
+        std::cerr << "QR failed!" << std::endl;
         return 1;
     }
 
-        // 7. Solve the system
-    Eigen::VectorXd solution = solver.solve(Mtb);
+    std::cout << "||b|| = " << b.norm() << '\n';
+    std::cout << "nnz(M) = " << M.nonZeros() << '\n';
+
+    Eigen::VectorXd solution = solver.solve(b);
     if (solver.info() != Eigen::Success) {
-        std::cerr << "Solving failed!" << std::endl;
+        std::cerr << "Solve failed!" << std::endl;
         return 1;
     }
+
 
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
-    std::cout << duration.count() << " segundos na iteracao \n";
+    std::cout << duration.count() << " segundos na iteração\n";
 
     for (int i = 1; i < lines; i++) {
         for (int j = 0; j < columns-1; j++){
@@ -548,7 +544,7 @@ int main() {
         int j = columns-1;
         phi.F[i][j] = phi.F[i][0];
     }
-    std::cout << "valor de phi no LE e: "<< phi.F[lines-1][(columns+1)/2] << '\n';
+    std::cout << "Valor de phi no LE é: " << phi.F[lines-1][(columns+1)/2] << "\n";
     
     for (int i = 1; i < lines; i++) {
         for (int j = 1; j < columns; j++) {
@@ -564,11 +560,11 @@ int main() {
             P.F[i][j] = Pinfinity + density*(std::pow(Vinfinity,2)-(std::pow(u.F[i][j],2)+std::pow(v.F[i][j],2)))/2;
         }
     }
-    std::cout << "valor de u no TE e: "<< u.F[lines-1][0] << '\n';
-    std::cout << "valor de v no TE e: "<< v.F[lines-1][0] << '\n';
+    std::cout << "Valor de u no TE é: "<< u.F[lines-1][0] << '\n';
+    std::cout << "Valor de v no TE é: "<< v.F[lines-1][0] << '\n';
     // output dos dados dos vetores u.F, v.F e P.F para o arquivo .tec 
     // x.F;y.F;u.F;v.F;P.F
-    tecplot.open("malha.vtk",std::fstream::out|std::fstream::trunc);
+    tecplot.open(vtkOut, std::fstream::out|std::fstream::trunc);
     if(tecplot.is_open()){
         tecplot <<"# vtk DataFile Version 3.0"<<std::endl<<"Campo 2D"<<std::endl<<"ASCII"<<std::endl<<"DATASET STRUCTURED_GRID"<<std::endl;
         tecplot<<"\n";
@@ -602,13 +598,11 @@ int main() {
     }
 
     tecplot.close();
-    std::cout << "terminou" << '\n';
+    std::cout << "Concluído" << '\n';
     
     return 0;
 }
        
-
-
 bool checkConvergence(std::vector<std::vector<double>> M, std::vector<std::vector<double>> M0, int lin, int col) {
     double delta = 1.0e-6;
     
@@ -655,18 +649,16 @@ double NACAinf(int m, int p, int t, double c, double x){
     return 0;
 }
 
-double Dydx(double x, std::string pos, int m, int p, int t, double c){
-    std::vector<double> n;
-    double derivative;
-    double h = 1.0e-9;
+double Dydx(double x, const std::string pos, int m, int p, int t, double c){
+    const double h = 1.0e-9;
     
     if (pos == "NACAsup") {
-        derivative = (NACAsup(m,p,t,c,x+h) - NACAsup(m,p,t,c,x-h))/(2*h);
+        return (NACAsup(m,p,t,c,x+h) - NACAsup(m,p,t,c,x-h))/(2*h);
     }
-    else if (pos == "NACAinf") {
-        derivative = (NACAinf(m,p,t,c,x+h) - NACAinf(m,p,t,c,x-h))/(2*h);
+    if (pos == "NACAinf") {
+        return (NACAinf(m,p,t,c,x+h) - NACAinf(m,p,t,c,x-h))/(2*h);
     }
-    return derivative;
+    throw std::invalid_argument("Dydx -> pós inválido: " + pos);
 }
 
 int matrixID(int i, int j, int lin, int col) {
