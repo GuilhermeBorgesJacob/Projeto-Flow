@@ -33,3 +33,4 @@ Três equações são suficientes para descrever o escoamento, pois apenas o cam
 A técnica consiste em um procedimento iterativo entre os campos de velocidade e de pressão. A partir de uma aproximação inicial para a pressão, a equação da quantidade de movimento pode ser resolvida para determinar o campo de velocidade. O campo de velocidade obtido não satisfaz a equação da continuidade, que exige divergência nula e, portanto, precisa ser corrigido. Como essa correção afeta o campo de pressão, define-se uma correção de pressão, obtida ao impor que a velocidade corrigida satisfaça a equação da continuidade. Isso resulta em uma equação de Poisson para a correção da pressão (HIRSH 1888).
 
 
+
