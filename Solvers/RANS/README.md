@@ -13,11 +13,11 @@ O código representa um gás ideal caloricamente perfeito, com propriedades cons
 
 ### 1.1 Conservação de massa
 
-\[
+$$
 \frac{\partial \rho}{\partial t}
 +\frac{\partial (\rho u)}{\partial x}
 +\frac{\partial (\rho v)}{\partial y}=0.
-\]
+$$
 
 Onde \(\rho\) é a densidade e \(u,v\) são as componentes da velocidade média.
 
