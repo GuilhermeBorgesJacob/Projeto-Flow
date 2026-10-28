@@ -25,35 +25,35 @@ Onde \(\rho\) é a densidade e \(u,v\) são as componentes da velocidade média.
 
 Na direção \(x\):
 
-\[
+$$
 \frac{\partial (\rho u)}{\partial t}
 +\frac{\partial (\rho u^2+p)}{\partial x}
 +\frac{\partial (\rho uv)}{\partial y}
 =\frac{\partial \tau_{xx}}{\partial x}
 +\frac{\partial \tau_{xy}}{\partial y}.
-\]
+$$
 
 Na direção \(y\):
 
-\[
+$$
 \frac{\partial (\rho v)}{\partial t}
 +\frac{\partial (\rho uv)}{\partial x}
 +\frac{\partial (\rho v^2+p)}{\partial y}
 =\frac{\partial \tau_{xy}}{\partial x}
 +\frac{\partial \tau_{yy}}{\partial y}.
-\]
+$$
 
 O tensor de tensões usa a viscosidade efetiva \(\mu_e=\mu+\mu_t\) e inclui a parcela isotrópica turbulenta quando a turbulência está ligada:
 
-\[
+$$
 \tau_{xx}=\frac{2}{3}\mu_e\left(2\frac{\partial u}{\partial x}-\frac{\partial v}{\partial y}\right)-\frac{2}{3}\rho k,
-\]
+$$
 
-\[
+$$
 \tau_{yy}=\frac{2}{3}\mu_e\left(2\frac{\partial v}{\partial y}-\frac{\partial u}{\partial x}\right)-\frac{2}{3}\rho k,
 \qquad
 \tau_{xy}=\mu_e\left(\frac{\partial u}{\partial y}+\frac{\partial v}{\partial x}\right).
-\]
+$$
 
 Quando `useTurbulence = 0`, a contribuição \(2\rho k/3\) é removida e \(\mu_t=0\).
 
@@ -61,31 +61,31 @@ Quando `useTurbulence = 0`, a contribuição \(2\rho k/3\) é removida e \(\mu_t
 
 O estado conservativo de energia usado no código é
 
-\[
+$$
 U_4=\rho E=\rho\left(e+\frac{u^2+v^2}{2}\right),
 \qquad e=C_vT.
-\]
+$$
 
 A equação é escrita em forma de fluxo:
 
-\[
+$$
 \frac{\partial (\rho E)}{\partial t}
 +\frac{\partial[(\rho E+p)u]}{\partial x}
 +\frac{\partial[(\rho E+p)v]}{\partial y}
 =\frac{\partial}{\partial x}\left(u\tau_{xx}+v\tau_{xy}-q_x\right)
 +\frac{\partial}{\partial y}\left(u\tau_{xy}+v\tau_{yy}-q_y\right),
-\]
+$$
 
 com fluxo térmico modelado por
 
-\[
+$$
 q_x=-\lambda_e\frac{\partial T}{\partial x},\qquad
 q_y=-\lambda_e\frac{\partial T}{\partial y},
-\]
+$$
 
-\[
+$$
 \lambda_e=C_p\left(\frac{\mu}{Pr}+\frac{\mu_t}{Pr_t}\right).
-\]
+$$
 
 **Convenção importante:** neste arquivo, \(U_4\) não inclui \(\rho k\); a energia cinética turbulenta é transportada separadamente por \(U_5=\rho k\). O fechamento energético e o acoplamento com a produção turbulenta precisam ser verificados por testes de conservação/benchmark antes de se considerar a implementação fisicamente validada. Isso foi feito para facilitar mas pode ser alterado
 
@@ -93,23 +93,23 @@ q_y=-\lambda_e\frac{\partial T}{\partial y},
 
 A variável \(k\) é a energia cinética turbulenta por unidade de massa e \(\varepsilon\) sua taxa de dissipação. As equações implementadas são, esquematicamente,
 
-\[
+$$
 \frac{\partial(\rho k)}{\partial t}+\nabla\cdot(\rho\mathbf{u}k)
 =\nabla\cdot\left[\left(\mu+\frac{\mu_t}{\sigma_k}\right)\nabla k\right]+P_k-\rho\varepsilon,
-\]
+$$
 
-\[
+$$
 \frac{\partial(\rho\varepsilon)}{\partial t}+\nabla\cdot(\rho\mathbf{u}\varepsilon)
 =\nabla\cdot\left[\left(\mu+\frac{\mu_t}{\sigma_\varepsilon}\right)\nabla\varepsilon\right]
 +C_{\varepsilon1}\frac{\varepsilon}{k}P_k
 -C_{\varepsilon2}\rho\frac{\varepsilon^2}{k}.
-\]
+$$
 
 A viscosidade turbulenta é
 
-\[
+$$
 \mu_t=\min\left(\rho C_\mu\frac{k^2}{\varepsilon},\;10^5\mu\right).
-\]
+$$
 
 As constantes padrão no código (alteráveis no main mas precisa recompilar depois) são
 
@@ -126,23 +126,23 @@ As constantes padrão no código (alteráveis no main mas precisa recompilar dep
 
 A produção é calculada a partir das derivadas de velocidade e da dilatação compressível; em seguida é limitada numericamente a
 
-\[
+$$
 0\leq P_k\leq 10\rho\varepsilon.
-\]
+$$
 
 Os termos de destruição das equações de \(k\) e \(\varepsilon\) recebem tratamento implícito pontual. Isso é uma escolha numérica de estabilização, não é necessariamente uma validação para o modelo com a turbulência ligada
 
 ### 1.5 Gás ideal e viscosidade molecular
 
-\[
+$$
 p=\rho RT,\qquad e=C_vT,\qquad \gamma=\frac{C_p}{C_v}.
-\]
+$$
 
 A viscosidade molecular é calculada pela lei de Sutherland:
 
-\[
+$$
 \mu(T)=\mu_0\left(\frac{T}{T_0}\right)^{3/2}\frac{T_0+S}{T+S},
-\]
+$$
 
 com \(T_0=288{,}16\,\mathrm{K}\), \(\mu_0=1{,}7894\times10^{-5}\,\mathrm{Pa\,s}\) e \(S=110\,\mathrm{K}\). A função limita a temperatura usada nesse cálculo a pelo menos 10 K para evitar problemas.
 
@@ -154,19 +154,19 @@ com \(T_0=288{,}16\,\mathrm{K}\), \(\mu_0=1{,}7894\times10^{-5}\,\mathrm{Pa\,s}\
 
 O código recebe coordenadas físicas \(x,y\) de uma malha estruturada e calcula o jacobiano aproximado
 
-\[
+$$
 J=x_\xi y_\eta-x_\eta y_\xi.
-\]
+$$
 
 As derivadas físicas são recuperadas pela regra da cadeia:
 
-\[
+$$
 \frac{\partial \phi}{\partial x}
 =\frac{\phi_\xi y_\eta-\phi_\eta y_\xi}{J},
 \qquad
 \frac{\partial \phi}{\partial y}
 =\frac{\phi_\eta x_\xi-\phi_\xi x_\eta}{J}.
-\]
+$$
 
 As diferenças computacionais pressupõem espaçamento uniforme no espaço computacional (incrementos unitários). A malha física pode ser curvilínea, mas a qualidade da transformação e a ausência de jacobianos próximos de zero são essenciais.
 
@@ -176,13 +176,13 @@ O avanço convectivo-viscoso é baseado no método de MacCormack. Primeiro, cons
 
 Em notação resumida:
 
-\[
+$$$
 U^*=U^n-\Delta t_{i,j}\left(D_x^+ E(U^n)+D_y^+F(U^n)\right),
-\]
+$$
 
-\[
+$$
 U^{n+1}=\frac12\left[U^n+U^*-\Delta t_{i,j}\left(D_x^-E(U^*)+D_y^-F(U^*)\right)\right].
-\]
+$$
 
 Aqui \(U\) representa o vetor das seis variáveis conservativas e \(E,F\) os fluxos nas direções cartesianas físicas. O código também atualiza as fontes de turbulência e acrescenta dissipação artificial depois do corretor.
 
@@ -190,17 +190,17 @@ Aqui \(U\) representa o vetor das seis variáveis conservativas e \(E,F\) os flu
 
 O passo local é calculado por uma estimativa convectiva–difusiva:
 
-\[
+$$
 \Delta t_{i,j}=\frac{CFL}{
 \frac{|u|+a}{\Delta s_1}+\frac{|v|+a}{\Delta s_2}
 +2\nu_e\left(\frac{1}{\Delta s_1^2}+\frac{1}{\Delta s_2^2}\right)},
-\]
+$$
 
 onde
 
-\[
+$$
 a=\sqrt{\gamma RT},\qquad \nu_e=\frac{\mu+\mu_t}{\rho}.
-\]
+$$
 
 \(\Delta s_1\) e \(\Delta s_2\) são escalas de comprimento estimadas a partir das distâncias entre pontos vizinhos nas duas direções computacionais. O método calcula um \(\Delta t_{i,j}\) por célula e a rotina retorna também o menor valor para diagnóstico.
 
@@ -239,9 +239,9 @@ Após cada predição/correção, o código aplica pisos para densidade, tempera
 
 O vetor conservativo é
 
-\[
+$$
 U=[\rho,\rho u,\rho v,\rho E,\rho k,\rho\varepsilon]^T.
-\]
+$$
 
 
 ---
@@ -256,9 +256,9 @@ As condições de contorno são fixas na classe `boundaryConditionsClass`, e nã
 
 A função de parede estima
 
-\[
+$$
 u_\tau=C_\mu^{1/4}\sqrt{k},\qquad y^+=\frac{\rho u_\tau y}{\mu}.
-\]
+$$
 
 Para \(y^+>11{,}225\), usa uma lei logarítmica para a tensão de parede; abaixo desse limite, usa uma expressão linear viscosa. A função é simplificada e depende da malha: com turbulência ativa, a primeira célula deve ser compatível com o tratamento de parede de alto Reynolds, em geral com \(y^+\) na faixa de parede logarítmica recomendada pelo modelo e pela aplicação.
 
