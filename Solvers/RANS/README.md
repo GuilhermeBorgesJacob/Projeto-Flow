@@ -2,7 +2,8 @@
 
 Solver em C++ para escoamento compressível bidimensional sobre uma malha estruturada curvilínea, com opção de turbulência pelo modelo padrão **k–ε**. O código calcula as equações de Navier–Stokes/RANS usando diferenças direcionais do tipo MacCormack (preditor–corretor), propriedades viscosas efetivas e dissipação artificial. Os campos são exportados em arquivos VTK para visualização no ParaView.
 
-> **Escopo e cautela:** este código deve ser considerado um protótipo educacional/de pesquisa, não um solver validado para projeto de engenharia. O algoritmo deste arquivo **não usa AUSM+**. O avanço é feito pelo método MacCormack com dissipação artificial e passo local de pseudo-tempo. As limitações e os testes necessários estão documentados abaixo.
+
+> **cautela:** PArte desse readme foi escrito ou corrigido pela IA para ganhar tempo, principalmente a escrita das equações porque ia demorar muito fazendo essa parte. Ou seja, não encontrei nenhum erro mas é possível que haja. 
 
 ---
 
@@ -86,7 +87,7 @@ q_y=-\lambda_e\frac{\partial T}{\partial y},
 \lambda_e=C_p\left(\frac{\mu}{Pr}+\frac{\mu_t}{Pr_t}\right).
 \]
 
-**Convenção importante:** neste arquivo, \(U_4\) não inclui \(\rho k\); a energia cinética turbulenta é transportada separadamente por \(U_5=\rho k\). O fechamento energético e o acoplamento com a produção turbulenta precisam ser verificados por testes de conservação/benchmark antes de se considerar a implementação fisicamente validada.
+**Convenção importante:** neste arquivo, \(U_4\) não inclui \(\rho k\); a energia cinética turbulenta é transportada separadamente por \(U_5=\rho k\). O fechamento energético e o acoplamento com a produção turbulenta precisam ser verificados por testes de conservação/benchmark antes de se considerar a implementação fisicamente validada. Isso foi feito para facilitar mas pode ser alterado
 
 ### 1.4 Modelo de turbulência padrão *k–ε*
 
@@ -110,7 +111,7 @@ A viscosidade turbulenta é
 \mu_t=\min\left(\rho C_\mu\frac{k^2}{\varepsilon},\;10^5\mu\right).
 \]
 
-As constantes padrão no código são
+As constantes padrão no código (alteráveis no main mas precisa recompilar depois) são
 
 | Constante | Valor |
 |---|---:|
@@ -129,7 +130,7 @@ A produção é calculada a partir das derivadas de velocidade e da dilatação 
 0\leq P_k\leq 10\rho\varepsilon.
 \]
 
-Os termos de destruição das equações de \(k\) e \(\varepsilon\) recebem tratamento implícito pontual. Isso é uma escolha numérica de estabilização, não uma validação do modelo turbulento.
+Os termos de destruição das equações de \(k\) e \(\varepsilon\) recebem tratamento implícito pontual. Isso é uma escolha numérica de estabilização, não é necessariamente uma validação para o modelo com a turbulência ligada
 
 ### 1.5 Gás ideal e viscosidade molecular
 
@@ -143,7 +144,7 @@ A viscosidade molecular é calculada pela lei de Sutherland:
 \mu(T)=\mu_0\left(\frac{T}{T_0}\right)^{3/2}\frac{T_0+S}{T+S},
 \]
 
-com \(T_0=288{,}16\,\mathrm{K}\), \(\mu_0=1{,}7894\times10^{-5}\,\mathrm{Pa\,s}\) e \(S=110\,\mathrm{K}\). A função limita a temperatura usada nesse cálculo a pelo menos 10 K.
+com \(T_0=288{,}16\,\mathrm{K}\), \(\mu_0=1{,}7894\times10^{-5}\,\mathrm{Pa\,s}\) e \(S=110\,\mathrm{K}\). A função limita a temperatura usada nesse cálculo a pelo menos 10 K para evitar problemas.
 
 ---
 
@@ -171,7 +172,7 @@ As diferenças computacionais pressupõem espaçamento uniforme no espaço compu
 
 ### 2.2 MacCormack preditor–corretor
 
-**Este código não usa AUSM+ nem um fluxo de Riemann AUSM.** O avanço convectivo-viscoso é baseado no método de MacCormack. Primeiro, constrói os fluxos físicos nas direções \(x\) e \(y\), com derivadas direcionais progressivas no preditor; depois atualiza os fluxos no estado predito e usa derivadas regressivas no corretor.
+O avanço convectivo-viscoso é baseado no método de MacCormack. Primeiro, constrói os fluxos físicos nas direções \(x\) e \(y\), com derivadas direcionais progressivas no preditor; depois atualiza os fluxos no estado predito e usa derivadas regressivas no corretor.(Não consegui discrever melhor)
 
 Em notação resumida:
 
@@ -203,9 +204,9 @@ a=\sqrt{\gamma RT},\qquad \nu_e=\frac{\mu+\mu_t}{\rho}.
 
 \(\Delta s_1\) e \(\Delta s_2\) são escalas de comprimento estimadas a partir das distâncias entre pontos vizinhos nas duas direções computacionais. O método calcula um \(\Delta t_{i,j}\) por célula e a rotina retorna também o menor valor para diagnóstico.
 
-**Interpretação:** o passo local é apropriado principalmente para acelerar a convergência a um regime permanente. Como diferentes células usam passos diferentes, a sequência de iterações não deve ser interpretada automaticamente como uma evolução transiente física sincronizada no tempo.
-
 ### 2.4 Soft start e dissipação artificial
+
+O modelo ajusta alguns fatores com o tempo 
 
 Nas primeiras 3000 iterações, o programa varia linearmente:
 
@@ -242,13 +243,12 @@ O vetor conservativo é
 U=[\rho,\rho u,\rho v,\rho E,\rho k,\rho\varepsilon]^T.
 \]
 
-A energia \(\rho E\), nesta implementação, não inclui \(\rho k\); veja a ressalva na seção das equações.
 
 ---
 
 ## 4. Condições de contorno implementadas
 
-As condições de contorno são fixas na classe `boundaryConditionsClass`, e não são selecionadas por um arquivo de configuração:
+As condições de contorno são fixas na classe `boundaryConditionsClass`, e não são selecionadas por um arquivo de configuração (mudarei isso assim que possível):
 
 - **Primeira linha (`i = 0`):** campo distante. \(\rho,u,v,p,T\) são definidos pelos valores livres codificados; \(k\) e \(\varepsilon\) dependem do sentido estimado do escoamento normal.
 - **Última linha (`i = L-1`):** parede estacionária sem deslizamento, com \(u=v=0\), temperatura imposta `T_wall` e pressão extrapolada da linha interna com piso de 10 Pa. Para turbulência ligada, \(\varepsilon\) na linha interna é recalculado com uma expressão algébrica de parede.
@@ -262,23 +262,12 @@ u_\tau=C_\mu^{1/4}\sqrt{k},\qquad y^+=\frac{\rho u_\tau y}{\mu}.
 
 Para \(y^+>11{,}225\), usa uma lei logarítmica para a tensão de parede; abaixo desse limite, usa uma expressão linear viscosa. A função é simplificada e depende da malha: com turbulência ativa, a primeira célula deve ser compatível com o tratamento de parede de alto Reynolds, em geral com \(y^+\) na faixa de parede logarítmica recomendada pelo modelo e pela aplicação.
 
-> **Atenção à orientação da malha:** o código associa a primeira e a última linha às fronteiras radiais e faz o fechamento periódico entre colunas. A mensagem impressa no leitor rotula as direções de modo potencialmente confuso. Confirme a ordem dos índices do arquivo e visualize a malha no ParaView antes de simular.
 
 ---
 
 ## 5. Malha de entrada
 
 O programa recebe o arquivo de malha como primeiro argumento. O leitor procura um cabeçalho que contenha `I = ...` e `J = ...`; a partir da linha seguinte, espera pares numéricos `x y` até preencher a malha declarada.
-
-Requisitos práticos:
-
-1. Use uma malha **estruturada, de bloco único**, com pelo menos 4 pontos em cada direção.
-2. Inclua um cabeçalho com dimensões `I` e `J` reconhecíveis por expressão regular, por exemplo `I=NI, J=NJ`.
-3. Depois do cabeçalho, forneça apenas as coordenadas `x y` na ordem de indexação esperada pelo código. Não deixe campos Tecplot adicionais nem outros números depois das coordenadas, pois podem ser interpretados como pontos.
-4. A direção periódica deve fechar corretamente entre a primeira e a última coluna, sem duplicações/incompatibilidades que alterem os espaçamentos.
-5. Evite células degeneradas, jacobianos próximos de zero e grandes distorções. O leitor atual não realiza uma validação geométrica completa.
-
-**Importante:** embora o código seja descrito como solver de cilindro, não infere automaticamente se uma malha é O, H ou C. As condições de contorno e a periodicidade são fixas; uma malha de outra topologia não funcionará corretamente sem modificar o código.
 
 ---
 
@@ -290,13 +279,11 @@ O código usa C++ e OpenMP. Em Linux com `g++` instalado:
 g++ -O3 -march=native -fopenmp -std=c++17 solver_rans_ke_M03.cpp -o rans_m03
 ```
 
-A compilação foi verificada com `g++ -O2 -Wall -Wextra -Wpedantic -std=c++17 -fopenmp` neste ambiente. Isso verifica a compilabilidade, não a validade física nem a convergência do solver.
-
 ---
 
 ## 7. Execução e parâmetros
 
-O programa não lê `parametros.txt` ou outro arquivo de configuração. As condições físicas e várias propriedades estão fixas no código-fonte. Os argumentos opcionais da linha de comando são posicionais:
+O programa não lê `parametros.txt` ou outro arquivo de configuração ainda, mas isso será feito no futuro. As condições físicas e várias propriedades estão fixas no código-fonte. Os argumentos opcionais da linha de comando são posicionais:
 
 ```bash
 OMP_NUM_THREADS=4 ./rans_m03 cilindro.grid 500000 0.002 0.4 1
@@ -334,7 +321,7 @@ Os valores físicos definidos em `main` incluem:
 | Razão inicial \(\mu_t/\mu\) usada para estimar \(\varepsilon_\infty\) | 10 |
 | Temperatura da parede | igual à temperatura livre calculada |
 
-Para mudar essas condições, altere os valores em `main` e recompile. Não existe atualmente uma opção de ângulo de ataque, pressão de saída ou temperatura de parede via linha de comando.
+Para mudar essas condições, altere os valores em `main` e recompile.
 
 ---
 
@@ -359,18 +346,6 @@ A primeira gravação ocorre na iteração 1; depois, a cada `writeEvery` itera�
 - `Epsilon` — dissipação \(\varepsilon\);
 - `Velocity` — vetor velocidade \((u,v,0)\).
 
-### Abrir resultados
-
-1. Abra o ParaView.
-2. Selecione `File > Open` e escolha um dos arquivos `escoamento_*.vtk`.
-3. Clique em **Apply**.
-4. Selecione `Pressure`, `Mach`, `TKE` ou `Epsilon` em `Coloring` para visualizar os campos.
-5. Para linhas de corrente, use `Filters > Alphabetical > Stream Tracer` e escolha `Velocity` como campo vetorial. Escolha uma fonte de sementes dentro do domínio e clique em **Apply**.
-6. Para animar os arquivos, carregue o conjunto de arquivos sequenciais como uma série temporal, ou abra os arquivos em conjunto e configure a série no leitor, conforme a versão do ParaView.
-
-Os arquivos são indexados por iteração, **não por tempo físico**. Como o esquema usa passo local de pseudo-tempo, não interprete automaticamente a sequência como um vídeo transiente com tempo físico correto.
-
----
 
 ## 9. Monitoramento e convergência
 
@@ -378,43 +353,21 @@ A cada `reportEvery` iterações (padrão 100), o programa imprime o CFL, o coef
 
 A normalização usa, para cada equação, o maior resíduo observado até aquele momento. Portanto, o primeiro valor normalizado tende a ser 1 e a queda dessas razões não é, isoladamente, uma prova suficiente de convergência. O código não possui critério automático de parada por convergência; ele termina após `maxIterations` ou em caso de erro fatal.
 
-Antes de considerar uma simulação convergida, monitore também grandezas físicas independentes dos resíduos, como pressão em pontos de interesse, distribuição superficial de pressão e forças integradas. Este código não calcula automaticamente coeficientes de arrasto e sustentação.
 
 ---
 
-## 10. Limitações conhecidas e validação necessária
+## 10. Limitações conhecidas e próximas mudanças
 
 1. **Não usa AUSM+.** O método espacial é MacCormack com dissipação artificial; não há divisão de Mach/pressão AUSM nem fluxo convectivo de Riemann por face.
-2. **Conservação discreta limitada.** A dissipação artificial é adicionada diretamente às variáveis conservativas por um laplaciano nodal, e não como divergência de fluxos de face compartilhados. Ela pode alterar os balanços integrais.
+2. **Variáveis e parametros separados** As variáveis e parâmetros atualmente estão no próprio código e a cada alteração é necessáro recompilar. O código será modificado para ler um arquivo .txt separado ou algo assim
 3. **Tratamento de parede simplificado.** A parede está fixada na última linha e a função de parede pressupõe um modelo de alto Reynolds; a implementação não é um modelo de baixo Reynolds.
-4. **Topologia restrita.** A periodicidade é fixa na direção das colunas, e as condições de contorno são fixas em duas linhas. Não há suporte genérico a O/H/C, blocos múltiplos ou contornos arbitrários.
-5. **Pisos numéricos alteram o estado.** Densidade, energia interna, \(k\) e \(\varepsilon\) podem ser corrigidos após etapas; a frequência dessas correções não é reportada.
-6. **Passo local para regime permanente.** Não é um método apropriado, sem alterações, para interpretar todas as iterações como um transiente físico.
-7. **Sem validação de engenharia incluída.** Não foram apresentados neste repositório testes de convergência de malha, balanço global completo, placa plana turbulenta ou comparação documentada de aerofólio.
-8. **Propriedades hard-coded.** A maioria das propriedades e condições físicas só pode ser alterada editando o fonte.
+4. **Adequação às malhas.** O código ainda não suporta todos os tipo de malha sem precisar alterar o código
+5. **Pisos numéricos** Densidade, energia interna, \(k\) e \(\varepsilon\) podem ser corrigidos após etapas; ainda não é reportada o niumero de correções feitas dessa forma.
+6. **Passo local para regime permanente.** Não é um método apropriado, sem alterações, para interpretar todas as iterações como um transiente físico, então tentarei adaptar para suportar regime transiente também
+7. **Incluir validação** 
+8. **Angulo de ataque** Não existe atualmente uma opção de ângulo de ataque, pressão de saída ou temperatura de parede via linha de comando.Isso será adicionado
+9. **Volumes finitos** Tentarei talvez adequar para volumes finitos caso encontre alguma vantagem clara para isso
 
-### Plano de verificação recomendado
-
-- **Teste de malha:** confirmar as direções, visualizar a malha e verificar que o jacobiano não zera nem muda de sinal.
-- **Escoamento uniforme:** verificar se um campo livre preserva aproximadamente o estado inicial sem uma parede interferindo no domínio.
-- **Caso laminar:** comparar um caso simples com uma solução de referência apropriada e demonstrar convergência ao refinar a malha e reduzir CFL.
-- **Camada-limite turbulenta:** comparar perfis de velocidade e coeficiente de atrito com dados publicados sob condições compatíveis com a função de parede.
-- **Aerofólio:** comparar \(C_p\), \(C_d\) e \(C_l\) com dados experimentais ou soluções de referência e realizar estudo de independência de malha.
-- **Sensibilidade à dissipação:** repetir os casos com diferentes valores de `dissipationCoeff`; resultados relevantes não devem depender arbitrariamente desse parâmetro.
-- **Conservação:** quantificar variações integradas de massa, momento e energia e relacioná-las aos fluxos de fronteira e à dissipação artificial.
-
-Uma queda de resíduo ou uma visualização plausível no ParaView não substitui esses testes.
+## É necessário validar ainda
 
 ---
-
-## 11. Referências teóricas iniciais
-
-- MacCormack, R. W. (1969). “The Effect of Viscosity in Hypervelocity Impact Cratering.” *AIAA Journal*, 7(1), 69–76. Referência clássica associada a esquemas explícitos preditor–corretor; a formulação usada aqui deve ser avaliada conforme a implementação específica.
-- Launder, B. E.; Spalding, D. B. (1974). “The Numerical Computation of Turbulent Flows.” *Computer Methods in Applied Mechanics and Engineering*, 3(2), 269–289. Modelo padrão *k–ε* e tratamento de parede.
-- NASA Turbulence Modeling Resource: <https://tmbwg.github.io/turbmodels/> — equações e casos de referência para verificação/validação de modelos de turbulência.
-
----
-
-## Licença
-
-Nenhuma licença de software é definida pelo código recebido. Antes de publicar o repositório, escolha e inclua uma licença explícita (por exemplo, MIT, BSD-3-Clause ou GPL-3.0), conforme os direitos e a intenção de distribuição do projeto.
