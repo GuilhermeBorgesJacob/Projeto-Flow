@@ -1,6 +1,6 @@
 # Solver 2D compressível RANS *k–ε* — MacCormack
 
-Solver em C++ para escoamento compressível bidimensional sobre uma malha estruturada curvilínea, com opção de turbulência pelo modelo padrão **k–ε**. O código calcula as equações de Navier–Stokes/RANS usando diferenças direcionais do tipo MacCormack (preditor–corretor), propriedades viscosas efetivas e dissipação artificial. Os campos são exportados em arquivos VTK para visualização no ParaView.
+Solver em C++ para escoamento compressível bidimensional sobre uma malha estruturada curvilínea, com opção de turbulência pelo modelo padrão **k–ε**. O código calcula as equações de Navier–Stokes/RANS usando diferenças direcionais do tipo MacCormack (preditor–corretor), propriedades viscosas efetivas e dissipação artificial. Descrição do código, equações e melhorias planejadas
 
 
 > **cautela:** PArte desse readme foi escrito ou corrigido pela IA para ganhar tempo, principalmente a escrita das equações porque ia demorar muito fazendo essa parte. Ou seja, não encontrei nenhum erro mas é possível que haja. 
