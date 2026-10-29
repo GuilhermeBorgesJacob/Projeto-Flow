@@ -115,14 +115,14 @@ As constantes padrão no código (alteráveis no main mas precisa recompilar dep
 
 | Constante | Valor |
 |---|---:|
-| \(C_\mu\) | 0,09 |
-| \(C_{\varepsilon1}\) | 1,44 |
-| \(C_{\varepsilon2}\) | 1,92 |
-| \(\sigma_k\) | 1,0 |
-| \(\sigma_\varepsilon\) | 1,3 |
-| \(Pr_t\) | 0,9 |
-| \(\kappa\) | 0,41 |
-| \(E\) (lei logarítmica) | 9,793 |
+| $$\(C_\mu\)$$ | 0,09 |
+| $$\(C_{\varepsilon1}\)$$ | 1,44 |
+| $$\(C_{\varepsilon2}\)$$ | 1,92 |
+| $$\(\sigma_k\)$$ | 1,0 |
+| $$\(\sigma_\varepsilon\$$) | 1,3 |
+| $$\(Pr_t\)$$ | 0,9 |
+| $$\(\kappa\)$$ | 0,41 |
+| $$\(E\)$$ (lei logarítmica) | 9,793 |
 
 A produção é calculada a partir das derivadas de velocidade e da dilatação compressível; em seguida é limitada numericamente a
 
