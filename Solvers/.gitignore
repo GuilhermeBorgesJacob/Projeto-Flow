@@ -1,0 +1,28 @@
+# Executáveis
+programa
+solver
+
+# Objetos e bibliotecas compiladas
+*.o
+*.obj
+*.so
+*.a
+*.exe
+
+# Saídas do solver
+malha.vtk
+
+# Arquivos de build do CMake (se usar)
+build/
+CMakeFiles/
+CMakeCache.txt
+
+# Editores
+.vscode/
+*.swp
+*~
+programa
+malha*.vtk
+*.vtk
+*.grid
+../Geradores de Malha/geradorMalha

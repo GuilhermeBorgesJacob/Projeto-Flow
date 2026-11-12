@@ -47,15 +47,29 @@ Coeficientes calcularCoeficientes(const CampoVTK& c,
   for (int k = 0; k < n - 1; ++k) {
     double dx = xc[k+1] - xc[k];
     double dy = yc[k+1] - yc[k];
+    
+    // Considerando profundidade unitária
+    double ds = std::sqrt(dx*dx + dy*dy);
+    if (ds == 0.0) continue; 
+
+    double normal_x = -dy / ds;
+    double normal_y =  dx / ds;
+
+    // CP médio no painel
     double Cp_med = 0.5 * (Cp[k] + Cp[k+1]);
 
-    Cl += -Cp_med * dx / corda * (-1.0);
-    Cd += -Cp_med * dy / corda * (-1.0);
+    double dFx = -Cp_med * normal_x * ds;
+    double dFy = -Cp_med * normal_y * ds;
 
-    double dFy = Cp_med * dx;
-    double dFx = Cp_med * dy;
-    Cm += (xc[k] * dFy - yc[k] * dFx) / corda;
-  }
-  
+    // Assumindo ângulo de ataque = 0
+    Cd += dFx / corda;
+    Cl += dFy / corda;
+
+    // Momento em relação à origem (usando o centroide do painel)
+    double x_med = 0.5 * (xc[k] + xc[k+1]);
+    double y_med = 0.5 * (yc[k] + yc[k+1]);
+    
+    Cm += (x_med * dFy - y_med * dFx) / pow(corda, 2.0); 
+  } 
   return {Cl, Cd, Cm};
 }

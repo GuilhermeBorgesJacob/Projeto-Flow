@@ -7,7 +7,7 @@
 
 int main() {
   try {
-    CampoVTK c = lerVTK("malha3.vtk");
+    CampoVTK c = lerVTK("malha6.vtk");
     std::cout << "Malha: " << c.columns << " x " << c.lines << "\n";
 
     double Pmin = 1e300, Pmax = -1e300;
