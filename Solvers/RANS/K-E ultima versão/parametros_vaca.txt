@@ -1,0 +1,72 @@
+# ============================================================================
+#  parametros_vaca.txt  -  escoamento em torno da silhueta de uma vaca (2D), malha tipo O
+#  Linhas 'chave = valor'. Tudo que vem depois de '#' e comentario.
+#  Uso:  OMP_NUM_THREADS=4 ./rans parametros.txt
+# ============================================================================
+
+# ---------------------------------- MALHA -----------------------------------
+grid_file   = malhas/vaca.grid    # nome da malha usada
+grid_format = auto                        # auto | tecplot | plot3d
+mesh_scale  = 1.0                         # multiplica as coordenadas (ex.: 0.001 se a malha esta em mm)
+output_dir  = saidas/vaca    # pasta de saida (criada se nao existir); um arquivo por instante gravado
+
+# --------------------------------- ESCOAMENTO -------------------------------
+mach       = 0.3          # Mach do escoamento livre (faixa de projeto do solver: 0.3 a 0.8)
+alpha_deg  = 0.0          # angulo de ataque [graus]
+p_inf      = 101325.0     # pressao estatica [Pa]
+T_inf      = 288.2        # temperatura estatica [K]
+T_wall     = -1    # parede: T > 0 -> isotermica nesse valor [K];  T <= 0 -> ADIABATICA
+# gas (ar): gamma, R_gas, e viscosidade de Sutherland (mu_ref em T_ref, constante S_suth)
+gamma  = 1.4
+R_gas  = 287.0
+mu_ref = 1.7894e-5
+T_ref  = 288.16
+S_suth = 110.0
+Pr     = 0.71
+
+# -------------------------------- TURBULENCIA -------------------------------
+turbulence = 1    # 0 = laminar (Navier-Stokes)   1 = RANS k-epsilon + funcao de parede
+Tu         = 0.01         # intensidade de turbulencia do escoamento livre (1% = 0.01)
+visc_ratio = 10.0         # mut/mu do escoamento livre
+kato_launder = 1          # 1 = producao de Kato-Launder (reduz anomalia de estagnacao); 0 = padrao
+# Atencao: com turbulence = 1 a funcao de parede exige y+ ~ 30-300 na primeira celula.
+
+# ----------------------------------- NUMERICA -------------------------------
+order     = 2             # 1 = 1a ordem (robusto, difusivo)   2 = MUSCL van Albada (recomendado)
+turb_order = 1            # ordem de k e eps: 1 = upwind (recomendado: evita k/eps negativos)   2 = MUSCL
+gradient  = lsq           # lsq = minimos quadrados (recomendado em malhas enviesadas)   gg = Green-Gauss
+cfl       = 0.7           # CFL do Runge-Kutta de 3 estagios (<= ~1.0)
+cfl_start = 0.2           # CFL inicial (rampa)...
+cfl_ramp  = 1000          # ...ate o cfl final em tantas iteracoes
+time_mode = local         # global = transiente (use para VIDEO)   local = so regime permanente (converge mais rapido)
+
+# ------------------------------- CRITERIO DE PARADA -------------------------
+max_iter    = 100000    
+t_end_star  = -1          # (so time_mode=global) para em t* = t*U/l_ref ; <=0 desliga
+
+# ------------------------------------ SAIDA ---------------------------------
+report_every      = 500    # imprime uma linha de acompanhamento a cada N iteracoes
+output_format     = vts   # vts = XML (recomendado)  |  vtk = legado ASCII.  Ambos abrem direto no ParaView.
+# Quando gravar (um ARQUIVO NOVO por instante, na pasta output_dir). Prioridade: time > tstar > iter
+write_every_time  = 0.0   # [s] a cada este TEMPO FISICO (so time_mode = global).  Ex.: 2.6e-5
+write_every_tstar = 0.0   # alternativa em t* = t*U/l_ref  (o programa mostra l_ref/U ao iniciar)
+write_every_iter  = 500    # alternativa: a cada N iteracoes (unica opcao em time_mode = local)
+l_ref             = 1.231    # comprimento de referencia p/ Cd, Cl, Re, t*  (<=0: extensao em x da parede, ex.: D ou corda)
+
+# ------------------------------------ CONTORNOS -----------------------------
+# boundary <lado> <faixa> <tipo>      lados: imin imax jmin jmax
+#   faixa: 'all' ou 'a:b' (celulas ao longo do lado, base 0; 'end' = ultima)
+#   tipos: wall      parede (nao-deslizamento; funcao de parede se turbulence=1)
+#          symmetry  parede de escorregamento / plano de simetria
+#          farfield  campo distante nao-reflexivo (invariantes de Riemann)
+#          outflow   saida (extrapolacao; use p_back para impor pressao)
+#          periodic  liga imin<->imax (ou jmin<->jmax); faixas de mesmo tamanho
+#          cut       corte de esteira da malha C: o 1o segmento 'cut' de um lado liga ao 2o (invertido)
+# Todas as celulas de cada lado precisam estar cobertas exatamente uma vez.
+# p_back = -1
+#
+# --- Malha O (vaca; wall em jmin) ---   corpo: 1.89 m x 1.23 m; l_ref = altura (1.231 m); Re = 1.3e7 em Mach 0.3
+boundary imin all periodic
+boundary imax all periodic
+boundary jmin all wall
+boundary jmax all farfield
