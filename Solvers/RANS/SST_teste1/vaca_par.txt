@@ -1,0 +1,68 @@
+# ============================================================================
+# TESTE SST - cilindro Re_D ~= 40
+# Configuracao conservadora para verificar a implementacao Menter k-omega SST.
+# Executar a partir da pasta do projeto que contem malhas/cilindro_Re40.grid:
+#   OMP_NUM_THREADS=8 ./rans_sst /caminho/para/parametros_sst_re40.txt
+#
+# IMPORTANTE:
+# - Este arquivo ativa SST (turbulence=1).
+# - Os resultados serao gravados em saidas_sst_re40_teste2, sem sobrescrever
+#   a pasta de saidas anterior.
+# - Nao inclui kato_launder porque o executavel informou que esse parametro
+#   e desconhecido/ignorado.
+# ============================================================================
+
+# ---------------------------------- MALHA -----------------------------------
+grid_file   = vaca.grid
+grid_format = auto
+mesh_scale  = 1.0
+output_dir  = saidas_vaca
+
+# --------------------------------- ESCOAMENTO -------------------------------
+mach       = 0.3
+alpha_deg  = 0.0
+p_inf      = 101325.0
+T_inf      = 288.2
+T_wall     = 288.2
+
+gamma      = 1.4
+R_gas      = 287.0
+mu_ref     = 1.7894e-5
+T_ref      = 288.16
+S_suth     = 110.0
+Pr         = 0.71
+
+# ------------------------------- TURBULENCIA --------------------------------
+# Modelo ativado: Menter k-omega SST-2003, parede resolvida.
+turbulence = 1
+Tu         = 0.01
+visc_ratio = 1.0e-3
+
+# ------------------------------- NUMERICA -----------------------------------
+# Primeira ordem para o teste de robustez; depois testar order=2.
+order      = 1
+cfl        = 0.1
+cfl_start  = 0.02
+cfl_ramp   = 3000
+
+time_mode  = local
+
+# --------------------------- CRITERIO DE PARADA -----------------------------
+max_iter   = 20000
+t_end_star = -1
+
+# ----------------------------------- SAIDA ----------------------------------
+report_every      = 100
+output_format     = vts
+write_every_time  = 0.0
+write_every_tstar = 0.0
+write_every_iter  = 500
+l_ref             = -1
+
+# --------------------------------- CONTORNOS --------------------------------
+# O-grid: periodicidade na direcao circunferencial, parede no cilindro,
+# campo distante no contorno externo.
+boundary imin all periodic
+boundary imax all periodic
+boundary jmin all wall
+boundary jmax all farfield
